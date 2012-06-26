@@ -30,8 +30,8 @@ void QueenAggressor::placePiece(GameState& g) {
 
 void QueenAggressor::doMove(GameState& g) {
 	//find our queen
-	signed qi=9;
-	signed qj=9;
+	signed char qi=9;
+	signed char qj=9;
 	for(unsigned char a = 0;a < 8;a++) {
 		for(unsigned char b = 0;b < 8;b++) {
 			if(g.getPiece(a,b)==(KING_MASK | color)) {
@@ -62,20 +62,16 @@ void QueenAggressor::doMove(GameState& g) {
 	}
 	if(abs(qi-ei)+abs(qj-ej)>1) {
 		//move towards it
-		if(qi!=ei && !g.getPiece(qi+abs(ei-qi)/(ei-qi),qj)) {
-			if(!g.movePiece(qi,qj,qi+abs(ei-qi)/(ei-qi),qj)) {
-				cout << "can't move from " << qi << ", " << qj << " to " << qi+abs(ei-qi)/(ei-qi) << ", " << qj << endl;
-			}
-			return;
+		unsigned char i;
+		unsigned char j;
+		if(pathFind(g,qi,qj,ei,ej,i,j)) {
+			cout << "can't get there" << endl;
+		} else {
+			doRandom(g);
 		}
-		if(qj!=ej && !g.getPiece(qi,qj+abs(ej-qj)/(ej-qj))) {
-			cout << "moving towards along j" << endl;
-			g.movePiece(qi,qj,qi,qj+abs(ej-qj)/(ej-qj)); return;
-		}
-		cout << "can't move towards any enemies" << endl;
-		doRandom(g);
 	}
-	
+	cout << "not implemented yet" << endl;
+	doRandom(g);
 	
 }
 
@@ -86,42 +82,50 @@ void QueenAggressor::doRandom(GameState& g) {
 	}
 }
 
-bool QueenAggressor::pathFind(GameState& g,const int& i_s,const int& j_s,const int& i_f,const int& j_f,const int& i,const int& j) {
-	struct data {
-		char i;
-		char j;
-		char prev;
-	};
+struct data {
+	unsigned char i;
+	unsigned char j;
+	unsigned char prev;
+};
+
+bool QueenAggressor::pathFind(GameState& g,const unsigned char& i_s,const unsigned char& j_s,const unsigned char& i_f,const unsigned char& j_f,unsigned char& i,unsigned char& j) {
+	
 	vector<data> moveVec;
 	bool visited[64];
 	for(unsigned char a=0;a<64;a++) {
-		const char& p = g.getPiece(a/8,a%8);
+		const unsigned char& p = g.getPiece(a/8,a%8);
 		visited[a] = p && (p & COLOR_MASK) == color;
 	}
 	visited[2*8+2] = visited[2*8+5] = visited[5*8+2] = visited[5*8 + 5] = true;
 	visited[i_s*8+j_s] = true;
 	data initial = { i_s, j_s, 0 };
 	moveVec.push_back(initial);
-	for(unsigned char b=0;b<moveVec.size(),b++) {
+	for(unsigned char b=0;b<moveVec.size();b++) {
 		data v = moveVec[b];
 		if(v.i == i_f && v.j == j_f) {
-			
+			while(v.prev != 0) {
+				v = moveVec[v.prev];
+			}
+			i = v.i;
+			j = v.j;
+			return true;
 		}
 		if(v.i<7 && !visited[(v.i+1)*8+j]) {
-			data v_up = {v.i+1, v.j, b};
-			moveList.push_back(v_up);
+			data v_up = {(unsigned char)(v.i+1), v.j, b};
+			moveVec.push_back(v_up);
 		}
 		if(v.i>0 && !visited[(v.i-1)*8+j]) {
-			data v_down = {v.i-1, v.j, b};
-			moveList.push_back(v_down);
+			data v_down = {(unsigned char)(v.i-1), v.j, b};
+			moveVec.push_back(v_down);
 		}
 		if(v.j<7 && !visited[v.i*8+j+1]) {
-			data v_right = {v.i, v.j+1, b};
-			moveList.push_back(v_right);
+			data v_right = {v.i, (unsigned char) (v.j+1), b};
+			moveVec.push_back(v_right);
 		}
 		if(v.j>0 && !visited[v.i*8+j-1]) {
-			data v_left = {v.i, v.j+1, b};
-			moveList.push_back(v_left);
+			data v_left = {v.i, (unsigned char) (v.j+1), b};
+			moveVec.push_back(v_left);
 		}
 	}
+	return false;
 }
