@@ -15,7 +15,7 @@ public:
 	virtual void doMove(GameState&);
 private:
 	void doRandom(GameState& g);
-	bool pathFind(GameState& g,const unsigned char& i_s,const unsigned char& j_s,const unsigned char& i_f,const unsigned char& j_f,unsigned char& i,unsigned char& j);
+	bool pathFind(GameState& g,const pos& i_s,const pos& j_s,const pos& i_f,const pos& j_f,pos& i,pos& j);
 	
 	bool color;
 };

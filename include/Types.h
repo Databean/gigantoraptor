@@ -6,5 +6,6 @@
 
 #define ArrayList std::vector
 typedef std::string String;
+typedef signed char pos;
 
 #endif

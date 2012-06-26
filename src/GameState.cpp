@@ -6,7 +6,7 @@
 using namespace std;
 
 GameState::GameState() {
-	for(unsigned char i=0;i<64;i++) {
+	for(pos i=0;i<64;i++) {
 		board[i]=0;
 	}
 	gameStarted = false;
@@ -18,15 +18,15 @@ GameState::~GameState() {
 	
 }
 
-bool GameState::placePiece(const char& type,const char& i,const char& j) {
+bool GameState::placePiece(const pos& type,const pos& i,const pos& j) {
 	if(gameStarted) { return false; } //are we placing pieces?
 	if(i < 0 || j < 0 || i > 7 || j > 7) { return false ;} //is this inside the board?
 	if(toMove != (type&COLOR_MASK)) { return false; } //not accpetable if the piece is not of the person who is to move
 	if((type & COLOR_MASK) == WHITE_BIT && i < 6) { return false; }
 	if((type & COLOR_MASK) == BLACK_BIT && i > 1) { return false; }
 	if(piece(i,j)!=0) { return false; } //already something there
-	char typeNoColor = type & (~COLOR_MASK);
-	char intendedOfType = 0;
+	pos typeNoColor = type & (~COLOR_MASK);
+	pos intendedOfType = 0;
 	switch(typeNoColor) {
 		case PAWN_MASK: intendedOfType = 8; break;
 		case KNIGHT_MASK:
@@ -36,13 +36,13 @@ bool GameState::placePiece(const char& type,const char& i,const char& j) {
 		case QUEEN_MASK: intendedOfType = 1; break;
 		default: return false; //not a valid piece
 	}
-	char actualOfType = 0;
+	pos actualOfType = 0;
 	if((type & COLOR_MASK) == WHITE_BIT) {
-		for(char i=0;i<8;i++) {
+		for(pos i=0;i<8;i++) {
 			actualOfType += (piece(6,i) == type) + (piece(7,i) == type);
 		}
 	} else {
-		for(char i=0;i<8;i++) {
+		for(pos i=0;i<8;i++) {
 			actualOfType += (piece(0,i) == type) + (piece(1,i) == type);
 		}
 	}
@@ -64,7 +64,7 @@ bool GameState::placePiece(const char& type,const char& i,const char& j) {
 	return true;
 }
 
-bool GameState::movePiece(const char& i_s,const char& j_s,const char& i_f,const char& j_f) {
+bool GameState::movePiece(const pos& i_s,const pos& j_s,const pos& i_f,const pos& j_f) {
 	if(!gameStarted) { printf("game hasn't started\n"); return false; } //are we moving pieces?
 	if(i_s < 0 || j_s < 0 || i_s > 7 || j_s > 7 || i_f < 0 || j_f < 0 || i_f > 7 || j_f > 7) { printf("not in board\n"); return false; } //is this inside the board?
 	if(!piece(i_s,j_s)) { printf("no piece\n"); return false; }
@@ -86,16 +86,16 @@ bool GameState::movePiece(const char& i_s,const char& j_s,const char& i_f,const 
 }
 
 void GameState::killUnguardedTrapPieces() {
-	char i_arr[] = {2, 2, 5, 5};
-	char j_arr[] = {2, 5, 2, 5};
+	pos i_arr[] = {2, 2, 5, 5};
+	pos j_arr[] = {2, 5, 2, 5};
 	
-	for(unsigned char a=0;a<4;a++) {
-		for(unsigned char b=0;b<4;b++) {
-			char i = i_arr[a];
-			char j = j_arr[b];
+	for(pos a=0;a<4;a++) {
+		for(pos b=0;b<4;b++) {
+			pos i = i_arr[a];
+			pos j = j_arr[b];
 			if(piece(i,j)) {
-				char color = piece(i,j) & COLOR_MASK;
-				char count = 0;
+				pos color = piece(i,j) & COLOR_MASK;
+				pos count = 0;
 				count += (piece(i+1,j)!=0) && ((piece(i+1,j)&COLOR_MASK) == color);
 				count += (piece(i,j+1)!=0) && ((piece(i,j+1)&COLOR_MASK) == color);
 				count += (piece(i-1,j)!=0) && ((piece(i-1,j)&COLOR_MASK) == color);
@@ -121,14 +121,14 @@ void GameState::finalizeMove() {
 	updateTurn();
 }
 
-bool GameState::frozen(const char& i,const char& j) {
+bool GameState::frozen(const pos& i,const pos& j) {
 	if(i < 0 || j < 0 || i > 7 || j > 7) { return true; } //is this inside the board?
 	if(piece(i,j)==0) { return true; } // is there actually a piece here?
 	
-	signed char count = 0;
-	char color = piece(i,j) & COLOR_MASK;
-	char pieceNoColor = piece(i,j) & (~COLOR_MASK);
-	char p;
+	pos count = 0;
+	pos color = piece(i,j) & COLOR_MASK;
+	pos pieceNoColor = piece(i,j) & (~COLOR_MASK);
+	pos p;
 #define FROZEN_OPERATION \
 if((p&COLOR_MASK) == color) { count += 10; } \
 else if(stronger(p,pieceNoColor)) { count--; }
@@ -151,7 +151,7 @@ else if(stronger(p,pieceNoColor)) { count--; }
 	return count < 0;
 }
 
-bool GameState::pushPiece(const char& i_1,const char& j_1,const char& i_2,const char& j_2,const char& i_3,const char& j_3) {
+bool GameState::pushPiece(const pos& i_1,const pos& j_1,const pos& i_2,const pos& j_2,const pos& i_3,const pos& j_3) {
 	//piece on (i_1,j_1) pushes piece on (i_2,j_2) to (i_3,j_3)
 	if(movesLeft < 2) { return false; }
 	if(i_1 < 0 || j_1 < 0 || i_1 > 7 || j_1 > 7) { return false; } //is this inside the board?
@@ -160,8 +160,8 @@ bool GameState::pushPiece(const char& i_1,const char& j_1,const char& i_2,const 
 	if(! piece(i_1,j_1)) { return false; } //does the pushing piece exist?
 	if(! piece(i_2,j_2)) { return false; } //does the piece being pushed exist?
 	if(piece(i_3,j_3)) { return false; } //is the pushing to square unoccupied?
-	const char& p1 = piece(i_1,j_1);
-	const char& p2 = piece(i_2,j_2);
+	const pos& p1 = piece(i_1,j_1);
+	const pos& p2 = piece(i_2,j_2);
 	if(frozen(i_1,i_2)) { return false; }
 	if((p1 & COLOR_MASK) != toMove) { return false; }
 	if((p2 & COLOR_MASK) == toMove) { return false; }
@@ -179,7 +179,7 @@ bool GameState::pushPiece(const char& i_1,const char& j_1,const char& i_2,const 
 	return true;
 }
 
-bool GameState::pullPiece(const char& i_1,const char& j_1,const char& i_2,const char& j_2,const char& i_3,const char& j_3) {
+bool GameState::pullPiece(const pos& i_1,const pos& j_1,const pos& i_2,const pos& j_2,const pos& i_3,const pos& j_3) {
 	//piece on (i_1,j_1) pulls piece on (i_2,j_2) and moves to (i_3,j_3)
 	if(movesLeft < 2) { return false; }
 	if(i_1 < 0 || j_1 < 0 || i_1 > 7 || j_1 > 7) { return false; } //is this inside the board?
@@ -188,8 +188,8 @@ bool GameState::pullPiece(const char& i_1,const char& j_1,const char& i_2,const 
 	if(! piece(i_1,j_1)) { return false; } //does the pulling piece exist?
 	if(! piece(i_2,j_2)) { return false; } //does the piece being pulled exist?
 	if(piece(i_3,j_3)) { return false; } //is the pulling to square unoccupied?
-	const char& p1 = piece(i_1,j_1);
-	const char& p2 = piece(i_2,j_2);
+	const pos& p1 = piece(i_1,j_1);
+	const pos& p2 = piece(i_2,j_2);
 	if(frozen(i_1,i_2)) { return false; }
 	if((p1 & COLOR_MASK) != toMove) { return false; }
 	if((p2 & COLOR_MASK) == toMove) { return false; }
