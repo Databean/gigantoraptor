@@ -18,7 +18,7 @@ GameState::~GameState() {
 	
 }
 
-bool GameState::placePiece(const pos& type,const pos& i,const pos& j) {
+bool GameState::canPlace(const pos& type,const pos& i,const pos& j) {
 	if(gameStarted) { return false; } //are we placing pieces?
 	if(i < 0 || j < 0 || i > 7 || j > 7) { return false ;} //is this inside the board?
 	if(toMove != (type&COLOR_MASK)) { return false; } //not accpetable if the piece is not of the person who is to move
@@ -47,6 +47,11 @@ bool GameState::placePiece(const pos& type,const pos& i,const pos& j) {
 		}
 	}
 	if(actualOfType == intendedOfType) { return false; } //already got enough of those
+	return true;
+}
+
+bool GameState::placePiece(const pos& type,const pos& i,const pos& j) {
+	if(!canPlace(type,i,j)) { return false; }
 	
 	piece(i,j) = type;
 	movesLeft--;
@@ -64,7 +69,7 @@ bool GameState::placePiece(const pos& type,const pos& i,const pos& j) {
 	return true;
 }
 
-bool GameState::movePiece(const pos& i_s,const pos& j_s,const pos& i_f,const pos& j_f) {
+bool GameState::canMove(const pos& i_s,const pos& j_s,const pos& i_f,const pos& j_f) {
 	if(!gameStarted) { printf("game hasn't started\n"); return false; } //are we moving pieces?
 	if(i_s < 0 || j_s < 0 || i_s > 7 || j_s > 7 || i_f < 0 || j_f < 0 || i_f > 7 || j_f > 7) { printf("not in board\n"); return false; } //is this inside the board?
 	if(!piece(i_s,j_s)) { printf("no piece\n"); return false; }
@@ -75,6 +80,11 @@ bool GameState::movePiece(const pos& i_s,const pos& j_s,const pos& i_f,const pos
 	if(piece(i_s,j_s) & PAWN_MASK) {
 		if((i_f-i_s) == ((piece(i_s,j_s) & COLOR_MASK) * 2 - 1)) { printf("pawns don't move back\n"); return false; } //pawns going in the right direction?
 	}
+	return true;
+}
+	
+bool GameState::movePiece(const pos& i_s,const pos& j_s,const pos& i_f,const pos& j_f) {
+	if(!canMove(i_s,j_s,i_f,j_f)) { return false; }
 	
 	piece(i_f,j_f) = piece(i_s,j_s);
 	piece(i_s,j_s) = 0;
@@ -151,7 +161,7 @@ else if(stronger(p,pieceNoColor)) { count--; }
 	return count < 0;
 }
 
-bool GameState::pushPiece(const pos& i_1,const pos& j_1,const pos& i_2,const pos& j_2,const pos& i_3,const pos& j_3) {
+bool GameState::canPush(const pos& i_1,const pos& j_1,const pos& i_2,const pos& j_2,const pos& i_3,const pos& j_3) {
 	//piece on (i_1,j_1) pushes piece on (i_2,j_2) to (i_3,j_3)
 	if(movesLeft < 2) { return false; }
 	if(i_1 < 0 || j_1 < 0 || i_1 > 7 || j_1 > 7) { return false; } //is this inside the board?
@@ -169,6 +179,12 @@ bool GameState::pushPiece(const pos& i_1,const pos& j_1,const pos& i_2,const pos
 	if(std::abs(i_3-i_2)+std::abs(j_3-j_2)!=1) { return false; } //are pushee and spot to be pushed to on neighboring squares?
 	if(! stronger(p1,p2)) { return false; }
 	
+	return true;
+}
+
+bool GameState::pushPiece(const pos& i_1,const pos& j_1,const pos& i_2,const pos& j_2,const pos& i_3,const pos& j_3) {
+	if(!canPush(i_1,j_1,i_2,j_2,i_3,j_3)) { return false; }
+	
 	piece(i_3,j_3) = piece(i_2,j_2);
 	piece(i_2,j_2) = piece(i_1,j_1);
 	piece(i_1,j_1) = 0;
@@ -179,7 +195,7 @@ bool GameState::pushPiece(const pos& i_1,const pos& j_1,const pos& i_2,const pos
 	return true;
 }
 
-bool GameState::pullPiece(const pos& i_1,const pos& j_1,const pos& i_2,const pos& j_2,const pos& i_3,const pos& j_3) {
+bool GameState::canPull(const pos& i_1,const pos& j_1,const pos& i_2,const pos& j_2,const pos& i_3,const pos& j_3) {
 	//piece on (i_1,j_1) pulls piece on (i_2,j_2) and moves to (i_3,j_3)
 	if(movesLeft < 2) { return false; }
 	if(i_1 < 0 || j_1 < 0 || i_1 > 7 || j_1 > 7) { return false; } //is this inside the board?
@@ -196,6 +212,11 @@ bool GameState::pullPiece(const pos& i_1,const pos& j_1,const pos& i_2,const pos
 	if(std::abs(i_2-i_1)+std::abs(j_2-j_1)!=1) { return false; } //are puller and pullee on neighboring squares?
 	if(std::abs(i_3-i_1)+std::abs(j_3-j_1)!=1) { return false; } //are puller and spot to be moved to neighboring?
 	if(! stronger(p1,p2)) { return false; }
+	return true;
+}
+
+bool GameState::pullPiece(const pos& i_1,const pos& j_1,const pos& i_2,const pos& j_2,const pos& i_3,const pos& j_3) {
+	if(!canPull(i_1,j_1,i_2,j_2,i_3,j_3)) { return false; }
 	
 	piece(i_3,j_3) = piece(i_1,j_1);
 	piece(i_1,j_1) = piece(i_2,j_2);

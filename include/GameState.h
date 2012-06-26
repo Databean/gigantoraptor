@@ -20,6 +20,11 @@ public:
 	//GameState(const GameState&); the default is acceptable, since no pointers are stored
 	//GameState& operator=(const GameState&); the default is acceptable, since no pointers are stored
 	
+	bool canPlace(const pos& type,const pos& i,const pos& j);
+	bool canMove(const pos& i_s,const pos& j_s,const pos& i_f,const pos& j_f); //move from (i_s,j_s) to (i_f,j_f)
+	bool canPush(const pos& i_1,const pos& j_1,const pos& i_2,const pos& j_2,const pos& i_3,const pos& j_3); //piece on (i_1,j_1) pushes piece on (i_2,j_2) to (i_3,j_3)
+	bool canPull(const pos& i_1,const pos& j_1,const pos& i_2,const pos& j_2,const pos& i_3,const pos& j_3); //piece on (i_1,j_1) pulls piece on (i_2,j_2) and moves to (i_3,j_3)
+	
 	bool placePiece(const pos& type,const pos& i,const pos& j);
 	bool movePiece(const pos& i_s,const pos& j_s,const pos& i_f,const pos& j_f); //move from (i_s,j_s) to (i_f,j_f)
 	bool pushPiece(const pos& i_1,const pos& j_1,const pos& i_2,const pos& j_2,const pos& i_3,const pos& j_3); //piece on (i_1,j_1) pushes piece on (i_2,j_2) to (i_3,j_3)
