@@ -143,21 +143,22 @@ bool GameState::frozen(const pos& i,const pos& j) {
 if((p&COLOR_MASK) == color) { count += 10; } \
 else if(stronger(p,pieceNoColor)) { count--; }
 	
-	if(i < 7 && (p = piece(i+1,j) != 0)) {
+	if(i < 7 && ((p = piece(i+1,j)) != 0)) {
 		FROZEN_OPERATION
 	}
-	if(i > 0 && (p = piece(i-1,j) != 0)) {
+	if(i > 0 && ((p = piece(i-1,j)) != 0)) {
 		FROZEN_OPERATION
 	}
-	if(j < 7 && (p = piece(i,j+1) != 0)) {
+	if(j < 7 && ((p = piece(i,j+1)) != 0)) {
 		FROZEN_OPERATION
 	}
-	if(j > 0 && (p = piece(i,j-1) != 0)) {
+	if(j > 0 && ((p = piece(i,j-1)) != 0)) {
 		FROZEN_OPERATION
 	}
 	if(count < 0) {
 		cout << "piece at " << i << ", " << j << " frozen" << endl;
 	}
+	//cout << "count: " << (int)count << endl;
 	return count < 0;
 }
 
@@ -172,7 +173,7 @@ bool GameState::canPush(const pos& i_1,const pos& j_1,const pos& i_2,const pos& 
 	if(piece(i_3,j_3)) { return false; } //is the pushing to square unoccupied?
 	const pos& p1 = piece(i_1,j_1);
 	const pos& p2 = piece(i_2,j_2);
-	if(frozen(i_1,i_2)) { return false; }
+	if(frozen(i_1,j_1)) { return false; }
 	if((p1 & COLOR_MASK) != toMove) { return false; }
 	if((p2 & COLOR_MASK) == toMove) { return false; }
 	if(std::abs(i_2-i_1)+std::abs(j_2-j_1)!=1) { return false; } //are pusher and pushee on neighboring squares?
@@ -197,7 +198,7 @@ bool GameState::pushPiece(const pos& i_1,const pos& j_1,const pos& i_2,const pos
 
 bool GameState::canPull(const pos& i_1,const pos& j_1,const pos& i_2,const pos& j_2,const pos& i_3,const pos& j_3) {
 	//piece on (i_1,j_1) pulls piece on (i_2,j_2) and moves to (i_3,j_3)
-	if(movesLeft < 2) { return false; }
+	if(movesLeft < 2) { printf("haven't got enough moves\n"); return false; }
 	if(i_1 < 0 || j_1 < 0 || i_1 > 7 || j_1 > 7) { return false; } //is this inside the board?
 	if(i_2 < 0 || j_2 < 0 || i_2 > 7 || j_2 > 7) { return false; } //is this inside the board?
 	if(i_3 < 0 || j_3 < 0 || i_3 > 7 || j_3 > 7) { return false; } //is this inside the board?
@@ -206,7 +207,7 @@ bool GameState::canPull(const pos& i_1,const pos& j_1,const pos& i_2,const pos& 
 	if(piece(i_3,j_3)) { return false; } //is the pulling to square unoccupied?
 	const pos& p1 = piece(i_1,j_1);
 	const pos& p2 = piece(i_2,j_2);
-	if(frozen(i_1,i_2)) { return false; }
+	if(frozen(i_1,j_1)) { printf("frozen"); return false; }
 	if((p1 & COLOR_MASK) != toMove) { return false; }
 	if((p2 & COLOR_MASK) == toMove) { return false; }
 	if(std::abs(i_2-i_1)+std::abs(j_2-j_1)!=1) { return false; } //are puller and pullee on neighboring squares?
@@ -226,4 +227,13 @@ bool GameState::pullPiece(const pos& i_1,const pos& j_1,const pos& i_2,const pos
 	finalizeMove();
 	
 	return true;
+}
+
+bool GameState::operator==(const GameState& other) {
+	for(pos i=0;i<64;i++) {
+		if(other.board[i] != board[i]) {
+			return false;
+		}
+	}
+	return toMove == other.toMove && movesLeft == other.movesLeft && gameStarted == other.gameStarted;
 }

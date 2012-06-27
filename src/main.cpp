@@ -7,11 +7,12 @@
 #include "ArimaaGame.h"
 #include "RandomPlayer.h"
 #include "QueenAggressor.h"
+#include "HumanPlayer.h"
 
 int main() {
 	srand(time(NULL));
-	RandomPlayer p1;
-	QueenAggressor p2;
+	HumanPlayer p1;
+	HumanPlayer p2;
 	ArimaaGame r(p1,p2);
 	if(!r.init()) { return -1; }
 	SDL_Event event;

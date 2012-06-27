@@ -19,6 +19,7 @@ public:
 	virtual ~GameState();
 	//GameState(const GameState&); the default is acceptable, since no pointers are stored
 	//GameState& operator=(const GameState&); the default is acceptable, since no pointers are stored
+	bool operator==(const GameState& other);
 	
 	bool canPlace(const pos& type,const pos& i,const pos& j);
 	bool canMove(const pos& i_s,const pos& j_s,const pos& i_f,const pos& j_f); //move from (i_s,j_s) to (i_f,j_f)

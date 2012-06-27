@@ -61,19 +61,19 @@ void ArimaaGame::draw() {
 			int color = !(((i+1)%3 == 0) && ((j+1)%3 == 0));
 			glBegin(GL_QUADS);
 			glColor3f(color,color,color);
-			glTexCoord2d(0.0,0.0); glVertex3d(i*50,j*50,0);
-			glTexCoord2d(1.0,0.0); glVertex3d((i+1)*50,j*50,0);
-			glTexCoord2d(1.0,1.0); glVertex3d((i+1)*50,(j+1)*50,0);
-			glTexCoord2d(0.0,1.0); glVertex3d(i*50,(j+1)*50,0);
+			glVertex3d(i*50,j*50,0);
+			glVertex3d((i+1)*50,j*50,0);
+			glVertex3d((i+1)*50,(j+1)*50,0);
+			glVertex3d(i*50,(j+1)*50,0);
 			glEnd();
 			if(state.getPiece(i,j)!=0) {
 				glBindTexture( GL_TEXTURE_2D, pieceTextures[(int)state.getPiece(i,j)] );
 				glBegin(GL_QUADS);
 				glColor3f(1,1,1);
-				glTexCoord2d(0.0,0.0); glVertex3d(i*50,j*50,0.5);
-				glTexCoord2d(1.0,0.0); glVertex3d((i+1)*50,j*50,0.5);
-				glTexCoord2d(1.0,1.0); glVertex3d((i+1)*50,(j+1)*50,0.5);
-				glTexCoord2d(0.0,1.0); glVertex3d(i*50,(j+1)*50,0.5);
+				glTexCoord2d(0.0,0.0); glVertex3d(i*50,j*50,0);
+				glTexCoord2d(1.0,0.0); glVertex3d((i+1)*50,j*50,0);
+				glTexCoord2d(1.0,1.0); glVertex3d((i+1)*50,(j+1)*50,0);
+				glTexCoord2d(0.0,1.0); glVertex3d(i*50,(j+1)*50,0);
 				glEnd();
 			}
 		}
@@ -89,4 +89,19 @@ void ArimaaGame::draw() {
 		glVertex3d(400,50*i,0.25);
 	}
 	glEnd();
+	
+	if(state.getToMove() == WHITE_BIT) {
+		white.draw(*this,state);
+	} else {
+		black.draw(*this,state);
+	}
+	
+}
+
+void ArimaaGame::handleEvent(const SDL_Event& event) {
+	if(state.getToMove() == WHITE_BIT) {
+		white.handleEvent(state,event);
+	} else {
+		black.handleEvent(state,event);
+	}
 }

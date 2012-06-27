@@ -13,6 +13,13 @@ public:
 	virtual bool init();
 	virtual void draw();
 	
+	virtual void handleEvent(const SDL_Event&);
+	
+	inline GLuint getPieceTexture(const pos& piece) const {
+		if(0 > piece || 127 < piece) { return 0; }
+		return pieceTextures[piece];
+	}
+	
 private:
 	GLuint pieceTextures[128];
 	GameState state;
