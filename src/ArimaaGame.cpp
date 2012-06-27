@@ -36,16 +36,20 @@ bool ArimaaGame::init() {
 	}
 	return false;
 }
+/**
+ * Called by CApp::render
+ * 
 
+ */
 void ArimaaGame::draw() {
-	//Make it do a move
-	if(state.getGameStarted()) {
+	//Make players move
+	if(state.getGameStarted()) { //move if game started
 		if(state.getToMove() == WHITE_BIT) {
 			white.doMove(state);
 		} else {
 			black.doMove(state);
 		}
-	} else {
+	} else { //place if game not started
 		if(state.getToMove() == WHITE_BIT) {
 			white.placePiece(state);
 		} else {
@@ -90,6 +94,7 @@ void ArimaaGame::draw() {
 	}
 	glEnd();
 	
+	//additional player drawing things
 	if(state.getToMove() == WHITE_BIT) {
 		white.draw(*this,state);
 	} else {
@@ -99,6 +104,7 @@ void ArimaaGame::draw() {
 }
 
 void ArimaaGame::handleEvent(const SDL_Event& event) {
+	//give event to appropriate player
 	if(state.getToMove() == WHITE_BIT) {
 		white.handleEvent(state,event);
 	} else {

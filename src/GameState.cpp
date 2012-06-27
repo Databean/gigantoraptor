@@ -18,6 +18,7 @@ GameState::~GameState() {
 	
 }
 
+
 bool GameState::canPlace(const pos& type,const pos& i,const pos& j) {
 	if(gameStarted) { return false; } //are we placing pieces?
 	if(i < 0 || j < 0 || i > 7 || j > 7) { return false ;} //is this inside the board?

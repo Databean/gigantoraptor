@@ -21,6 +21,7 @@ public:
 	}
 	
 private:
+	//
 	GLuint pieceTextures[128];
 	GameState state;
 	Player& white;
