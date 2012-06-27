@@ -7,7 +7,7 @@ EXECUTABLE := main
 .PHONY: main
 main: 
 	cd src && $(MAKE)
-	$(CC) -Wall $(LINK_FILES) obj/*.o -o main
+	$(CC) -Wall obj/*.o -o gigantoraptor $(LINK_FILES) 
 
 .PHONY: clean
 clean: 
