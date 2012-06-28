@@ -63,6 +63,10 @@ void HumanPlayer::doMove(GameState& g) {
 	}
 }
 
+
+/**
+ * Takes events, records mouse position
+ */
 void HumanPlayer::handleEvent(const GameState& g,const SDL_Event& e) {
 	switch(e.type) {
 		case SDL_MOUSEMOTION:
