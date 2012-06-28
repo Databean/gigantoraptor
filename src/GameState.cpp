@@ -3,7 +3,9 @@
 #include <iostream>
 #include <cstdio>
 
-using namespace std;
+using std::cout;
+using std::abs;
+using std::endl;
 
 GameState::GameState() {
 	for(pos i=0;i<64;i++) {
@@ -23,10 +25,10 @@ bool GameState::canPlace(const pos& type,const pos& i,const pos& j) {
 	if(gameStarted) { return false; } //are we placing pieces?
 	if(i < 0 || j < 0 || i > 7 || j > 7) { return false ;} //is this inside the board?
 	if(toMove != (type&COLOR_MASK)) { return false; } //not accpetable if the piece is not of the person who is to move
-	if((type & COLOR_MASK) == WHITE_BIT && i < 6) { return false; }
-	if((type & COLOR_MASK) == BLACK_BIT && i > 1) { return false; }
+	if(isWhite(type) && i < 6) { return false; }
+	if(isBlack(type) && i > 1) { return false; }
 	if(piece(i,j)!=0) { return false; } //already something there
-	pos typeNoColor = type & (~COLOR_MASK);
+	pos typeNoColor = stripColor(type);
 	pos intendedOfType = 0;
 	switch(typeNoColor) {
 		case PAWN_MASK: intendedOfType = 8; break;
@@ -38,7 +40,7 @@ bool GameState::canPlace(const pos& type,const pos& i,const pos& j) {
 		default: return false; //not a valid piece
 	}
 	pos actualOfType = 0;
-	if((type & COLOR_MASK) == WHITE_BIT) {
+	if(isWhite(type)) {
 		for(pos i=0;i<8;i++) {
 			actualOfType += (piece(6,i) == type) + (piece(7,i) == type);
 		}
@@ -77,9 +79,9 @@ bool GameState::canMove(const pos& i_s,const pos& j_s,const pos& i_f,const pos& 
 	if((piece(i_s,j_s) & COLOR_MASK) != toMove) { printf("wrong color\n"); return false; } //is it this person's turn?
 	if(piece(i_f,j_f)!=0) { printf("moving to occupied\n"); return false; } // is there something occupying the spot to move to?
 	if(frozen(i_s,j_s)) { printf("frozen\n"); return false; }
-	if(std::abs(i_f-i_s)+std::abs(j_f-j_s)!=1) { printf("too far\n"); return false; }
-	if(piece(i_s,j_s) & PAWN_MASK) {
-		if((i_f-i_s) == ((piece(i_s,j_s) & COLOR_MASK) * 2 - 1)) { printf("pawns don't move back\n"); return false; } //pawns going in the right direction?
+	if(abs(i_f-i_s)+abs(j_f-j_s)!=1) { printf("too far\n"); return false; }
+	if(isPawn(piece(i_s,j_s))) {
+		if((i_f-i_s) == (getColor(piece(i_s,j_s)) * 2 - 1)) { printf("pawns don't move back\n"); return false; } //pawns going in the right direction?
 	}
 	return true;
 }
@@ -105,14 +107,14 @@ void GameState::killUnguardedTrapPieces() {
 			pos i = i_arr[a];
 			pos j = j_arr[b];
 			if(piece(i,j)) {
-				pos color = piece(i,j) & COLOR_MASK;
+				pos color = getColor(piece(i,j));
 				pos count = 0;
 				count += (piece(i+1,j)!=0) && ((piece(i+1,j)&COLOR_MASK) == color);
 				count += (piece(i,j+1)!=0) && ((piece(i,j+1)&COLOR_MASK) == color);
 				count += (piece(i-1,j)!=0) && ((piece(i-1,j)&COLOR_MASK) == color);
 				count += (piece(i,j-1)!=0) && ((piece(i,j-1)&COLOR_MASK) == color);
 				if(count==0) {
-					cout << "a " << int(piece(i,j)) << " from " << (piece(i,j) & (COLOR_MASK)) << " died in " << int(i) << ", " << int(j) << endl;
+					cout << "a " << int(piece(i,j)) << " from " << getColor(piece(i,j)) << " died in " << int(i) << ", " << int(j) << endl;
 					piece(i,j) = 0;
 				}
 			}
@@ -137,11 +139,11 @@ bool GameState::frozen(const pos& i,const pos& j) {
 	if(piece(i,j)==0) { return true; } // is there actually a piece here?
 	
 	pos count = 0;
-	pos color = piece(i,j) & COLOR_MASK;
-	pos pieceNoColor = piece(i,j) & (~COLOR_MASK);
+	pos color = getColor(piece(i,j));
+	pos pieceNoColor = stripColor(piece(i,j));
 	pos p;
 #define FROZEN_OPERATION \
-if((p&COLOR_MASK) == color) { count += 10; } \
+if(isColor(p,color)) { count += 10; } \
 else if(stronger(p,pieceNoColor)) { count--; }
 	
 	if(i < 7 && ((p = piece(i+1,j)) != 0)) {
@@ -175,10 +177,10 @@ bool GameState::canPush(const pos& i_1,const pos& j_1,const pos& i_2,const pos& 
 	const pos& p1 = piece(i_1,j_1);
 	const pos& p2 = piece(i_2,j_2);
 	if(frozen(i_1,j_1)) { return false; }
-	if((p1 & COLOR_MASK) != toMove) { return false; }
-	if((p2 & COLOR_MASK) == toMove) { return false; }
-	if(std::abs(i_2-i_1)+std::abs(j_2-j_1)!=1) { return false; } //are pusher and pushee on neighboring squares?
-	if(std::abs(i_3-i_2)+std::abs(j_3-j_2)!=1) { return false; } //are pushee and spot to be pushed to on neighboring squares?
+	if(!isColor(p1,toMove)) { return false; }
+	if(isColor(p2,toMove)) { return false; }
+	if(abs(i_2-i_1)+abs(j_2-j_1)!=1) { return false; } //are pusher and pushee on neighboring squares?
+	if(abs(i_3-i_2)+abs(j_3-j_2)!=1) { return false; } //are pushee and spot to be pushed to on neighboring squares?
 	if(! stronger(p1,p2)) { return false; }
 	
 	return true;
@@ -209,10 +211,10 @@ bool GameState::canPull(const pos& i_1,const pos& j_1,const pos& i_2,const pos& 
 	const pos& p1 = piece(i_1,j_1);
 	const pos& p2 = piece(i_2,j_2);
 	if(frozen(i_1,j_1)) { printf("frozen"); return false; }
-	if((p1 & COLOR_MASK) != toMove) { return false; }
-	if((p2 & COLOR_MASK) == toMove) { return false; }
-	if(std::abs(i_2-i_1)+std::abs(j_2-j_1)!=1) { return false; } //are puller and pullee on neighboring squares?
-	if(std::abs(i_3-i_1)+std::abs(j_3-j_1)!=1) { return false; } //are puller and spot to be moved to neighboring?
+	if(!isColor(p1,toMove)) { return false; }
+	if(isColor(p2,toMove)) { return false; }
+	if(abs(i_2-i_1)+abs(j_2-j_1)!=1) { return false; } //are puller and pullee on neighboring squares?
+	if(abs(i_3-i_1)+abs(j_3-j_1)!=1) { return false; } //are puller and spot to be moved to neighboring?
 	if(! stronger(p1,p2)) { return false; }
 	return true;
 }

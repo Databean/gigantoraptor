@@ -50,7 +50,7 @@ void QueenAggressor::doMove(GameState& g) {
 	for(pos a = 0;a < 8;a++) {
 		for(pos b = 0;b < 8;b++) {
 			pos piece = g.getPiece(a,b);
-			if(((piece & COLOR_MASK) != color) && (abs(qi-a)+abs(qj-b)<abs(qi-ei)+abs(qj-ej)) && g.stronger(QUEEN_MASK,piece)) {
+			if(((piece & COLOR_MASK) != color) && (abs(qi-a)+abs(qj-b)<abs(qi-ei)+abs(qj-ej)) && stronger(QUEEN_MASK,piece)) {
 				ei = a;
 				ej = b;
 			}
