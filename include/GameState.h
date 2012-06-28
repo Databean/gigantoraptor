@@ -3,6 +3,10 @@
 
 #include "Types.h"
 
+/**
+ * Each bit represents a different piece
+ * These are used to interact with the char resultant from getPiece
+ */
 #define BLACK_BIT 0
 #define WHITE_BIT 1
 #define COLOR_MASK 0x1
@@ -13,6 +17,11 @@
 #define QUEEN_MASK 0x20
 #define KING_MASK 0x40
 
+/**
+ * \brief Encapsulates the game and provides an interface for player interaction
+ * 
+ * 
+ */
 class GameState {
 public:
 	GameState();
@@ -31,8 +40,13 @@ public:
 	bool pushPiece(const pos& i_1,const pos& j_1,const pos& i_2,const pos& j_2,const pos& i_3,const pos& j_3); //piece on (i_1,j_1) pushes piece on (i_2,j_2) to (i_3,j_3)
 	bool pullPiece(const pos& i_1,const pos& j_1,const pos& i_2,const pos& j_2,const pos& i_3,const pos& j_3); //piece on (i_1,j_1) pulls piece on (i_2,j_2) and moves to (i_3,j_3)
 	
-	
+	/**
+	 * Returns the piece located at provided coordinates
+	 */
 	inline const pos& getPiece(const pos& i,const pos& j) const { return board[i*8+j]; }
+	
+	/**
+	 */
 	inline const bool& getToMove() const { return toMove; }
 	inline const pos& getMovesLeft() const { return movesLeft; }
 	inline const bool& getGameStarted() const { return gameStarted; }
