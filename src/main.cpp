@@ -8,10 +8,11 @@
 #include "RandomPlayer.h"
 #include "QueenAggressor.h"
 #include "HumanPlayer.h"
+#include "HumanVisPlayer.h"
 
 int main() {
 	srand(time(NULL));
-	HumanPlayer p1;
+	HumanVisPlayer p1;//white
 	HumanPlayer p2;
 	ArimaaGame r(p1,p2);
 	if(!r.init()) { return -1; }
