@@ -11,8 +11,8 @@ public:
 	virtual void setColor(const bool& b) {color = b;}
 	virtual const bool& getColor() {return color;}
 	
-	virtual void placePiece(GameState&);
-	virtual void doMove(GameState&);
+	virtual GameState placePiece(const GameState&);
+	virtual GameState doMove(const GameState&);
 	
 	virtual void handleEvent(const GameState&,const SDL_Event&);
 	virtual void draw(const ArimaaGame&, const GameState&);

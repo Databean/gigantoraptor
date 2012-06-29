@@ -19,9 +19,10 @@ HumanPlayer::~HumanPlayer() {
 	
 }
 
-void HumanPlayer::placePiece(GameState& g) {
+GameState HumanPlayer::placePiece(const GameState& g) {
+	GameState g_new = g;
 	if(select_i_1 != -1 && select_j_1 != -1) {
-		if(g.placePiece(piece | color,select_i_1,select_j_1)) {
+		if(g_new.placePiece(piece | color,select_i_1,select_j_1)) {
 			pieceCount++;
 			switch(piece) {
 				case PAWN_MASK:
@@ -40,27 +41,30 @@ void HumanPlayer::placePiece(GameState& g) {
 		}
 		select_i_1 = select_j_1 = -1;
 	}
+	return g_new;
 }
 
-void HumanPlayer::doMove(GameState& g) {
+GameState HumanPlayer::doMove(const GameState& g) {
+	GameState g_new = g;
 	pos p1 = g.getPiece(select_i_1,select_j_1);
 	if(!p1 || (p1 & COLOR_MASK) != color) {
 		select_i_1 = select_j_1 = select_i_2 = select_j_2 = select_i_3 = select_j_3 = -1;
 	}
 	if(select_i_2 != -1) {
-		pos p2 = g.getPiece(select_i_2,select_j_2);
+		pos p2 = g_new.getPiece(select_i_2,select_j_2);
 		if(!p2) {
-			g.movePiece(select_i_1,select_j_1,select_i_2,select_j_2);
+			g_new.movePiece(select_i_1,select_j_1,select_i_2,select_j_2);
 			select_i_1 = select_j_1 = select_i_2 = select_j_2 = select_i_3 = select_j_3 = -1;
 		} else {
 			if(select_i_3 != -1) {
-				if(!g.pushPiece(select_i_1,select_j_1,select_i_2,select_j_2,select_i_3,select_j_3)) {
-					g.pullPiece(select_i_1,select_j_1,select_i_2,select_j_2,select_i_3,select_j_3);
+				if(!g_new.pushPiece(select_i_1,select_j_1,select_i_2,select_j_2,select_i_3,select_j_3)) {
+					g_new.pullPiece(select_i_1,select_j_1,select_i_2,select_j_2,select_i_3,select_j_3);
 				}
 				select_i_1 = select_j_1 = select_i_2 = select_j_2 = select_i_3 = select_j_3 = -1;
 			}
 		}
 	}
+	return g_new;
 }
 
 void HumanPlayer::handleEvent(const GameState& g,const SDL_Event& e) {

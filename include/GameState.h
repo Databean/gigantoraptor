@@ -20,6 +20,7 @@
 inline bool isBlack(const pos& piece) { return (piece & COLOR_MASK) == BLACK_BIT; }
 inline bool isWhite(const pos& piece) { return (piece & COLOR_MASK) == WHITE_BIT; }
 inline bool getColor(const pos& piece) { return piece & COLOR_MASK; }
+inline bool getPieceColor(const pos& piece) { return piece & COLOR_MASK; }
 inline bool isColor(const pos& piece,const bool& color) { return (piece & COLOR_MASK) == color; }
 inline pos stripColor(const pos& piece) { return (piece & (~COLOR_MASK)); }
 inline bool isPawn(const pos& piece) { return (piece & PAWN_MASK) != 0; }
@@ -78,11 +79,16 @@ public:
 	inline const bool& getToMove() const { return toMove; }
 	inline const pos& getMovesLeft() const { return movesLeft; }
 	inline const bool& getGameStarted() const { return gameStarted; }
-	bool frozen(const pos& i,const pos& j);
+	inline const bool& getGameFinished() const { return gameFinished; }
+	bool frozen(const pos& i,const pos& j) const;
+	inline bool frozen(const pos2& p) const { return frozen(p.i,p.j); }
 	
+	inline const pos& piece(const pos& i,const pos& j) const { return board[i*8+j]; }
+	inline const pos& piece(const pos2& p) const { return board[p.i*8+p.j]; }
 	
 private:
 	inline pos& piece(const pos& i,const pos& j) { return board[i*8+j]; }
+	inline pos& piece(const pos2& p) { return board[p.i*8 + p.j]; }
 	
 	void finalizeMove();
 	void killUnguardedTrapPieces();
@@ -92,6 +98,7 @@ private:
 	bool toMove; //whose turn is it?
 	pos movesLeft; //how many moves left in the current turn?
 	bool gameStarted; //are we placing pieces or moving them?
+	bool gameFinished;
 };
 
 #endif

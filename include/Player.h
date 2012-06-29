@@ -22,14 +22,14 @@ public:
 	 * At this time the GameState will only accept
 	 * placement calls
 	 */
-	virtual void placePiece(GameState&) = 0;
+	virtual GameState placePiece(const GameState&) = 0;
 	/**
 	 * Gives the player the state and requests the 
 	 * player to change the state
 	 * 
 	 * Game state only accepts valid moves
 	 */
-	virtual void doMove(GameState&) = 0;
+	virtual GameState doMove(const GameState&) = 0;
 	
 	/**
 	 * Called by ArimaaGame::handleEvent

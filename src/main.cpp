@@ -8,6 +8,7 @@
 #include "RandomPlayer.h"
 #include "QueenAggressor.h"
 #include "HumanPlayer.h"
+#include "MinimaxPlayer.h"
 
 int main() {
 	srand(time(NULL));
@@ -17,6 +18,7 @@ int main() {
 	if(!r.init()) { return -1; }
 	SDL_Event event;
 	bool running = true;
+	r.playGame();
 	while(running) {
 		while(SDL_PollEvent(&event)) {
 			if(event.type==SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) {
@@ -29,4 +31,5 @@ int main() {
 		r.render();
 		SDL_Delay(10);
 	}
+	r.haltGame();
 }

@@ -14,6 +14,7 @@ GameState::GameState() {
 	gameStarted = false;
 	toMove = WHITE_BIT;
 	movesLeft = 16;
+	gameFinished = false;
 }
 
 GameState::~GameState() {
@@ -134,7 +135,7 @@ void GameState::finalizeMove() {
 	updateTurn();
 }
 
-bool GameState::frozen(const pos& i,const pos& j) {
+bool GameState::frozen(const pos& i,const pos& j) const {
 	if(i < 0 || j < 0 || i > 7 || j > 7) { return true; } //is this inside the board?
 	if(piece(i,j)==0) { return true; } // is there actually a piece here?
 	

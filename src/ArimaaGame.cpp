@@ -11,6 +11,9 @@ ArimaaGame::ArimaaGame(Player& white,Player& black) : CApp(400,400), white(white
 	
 	white.setColor(WHITE_BIT);
 	black.setColor(BLACK_BIT);
+	
+	gameThread = 0;
+	stateMutex = 0;
 }
 
 ArimaaGame::~ArimaaGame() {
@@ -32,30 +35,60 @@ bool ArimaaGame::init() {
 		pieceTextures[QUEEN_MASK | WHITE_BIT] = getTextureFromImage("images/pieces/WhiteQ.png");
 		pieceTextures[QUEEN_MASK | BLACK_BIT] = getTextureFromImage("images/pieces/BlackQ.png");
 		
+		stateMutex = SDL_CreateMutex();
+		
 		return true;
 	}
 	return false;
 }
+
+int gameLoopFunction(void* data) {
+	ArimaaGame& ag = *(reinterpret_cast<ArimaaGame*>(data));
+	while(ag.running) {
+		GameState nState;
+		if(ag.state.getGameStarted()) { //move if game started
+			if(ag.state.getToMove() == WHITE_BIT) {
+				nState = ag.white.doMove(ag.state);
+			} else {
+				nState = ag.black.doMove(ag.state);
+			}
+		} else { //place if game not started
+			if(ag.state.getToMove() == WHITE_BIT) {
+				nState = ag.white.placePiece(ag.state);
+			} else {
+				nState = ag.black.placePiece(ag.state);
+			}
+		}
+		SDL_mutexP(ag.stateMutex);
+		ag.state = nState;
+		SDL_mutexV(ag.stateMutex);
+		if(ag.state.getGameFinished()) {
+			ag.running = false;
+		}
+		SDL_Delay(10);
+	}
+	return 0;
+}
+
+void ArimaaGame::playGame() {
+	if(gameThread) { return; }
+	running = true;
+	gameThread = SDL_CreateThread(gameLoopFunction,this);
+}
+
+void ArimaaGame::haltGame() {
+	int i;
+	running = false;
+	SDL_WaitThread(gameThread,&i);
+}
+
 /**
  * Called by CApp::render
  * 
 
  */
 void ArimaaGame::draw() {
-	//Make players move
-	if(state.getGameStarted()) { //move if game started
-		if(state.getToMove() == WHITE_BIT) {
-			white.doMove(state);
-		} else {
-			black.doMove(state);
-		}
-	} else { //place if game not started
-		if(state.getToMove() == WHITE_BIT) {
-			white.placePiece(state);
-		} else {
-			black.placePiece(state);
-		}
-	}
+	SDL_mutexP(stateMutex);
 	//Draw board
 	
 	for(int i=0;i<8;i++) {
@@ -100,7 +133,7 @@ void ArimaaGame::draw() {
 	} else {
 		black.draw(*this,state);
 	}
-	
+	SDL_mutexV(stateMutex);
 }
 
 void ArimaaGame::handleEvent(const SDL_Event& event) {
