@@ -5,9 +5,11 @@
 #include "Player.h"
 
 struct minimax_res {
-	minimax_res(const pos& score, const pos& i1, const pos& j1, const pos& i2, const pos& j2) : score(score), i1(i1), j1(j1), i2(i2), j2(j2) {}
-	pos score, i1, j1, i2, j2;
-	inline bool operator<(const minimax_res& other) const { return score <= other.score; }
+	minimax_res(const pos& score) : score(score) {}
+	pos score, i1, j1, i2, j2, i3, j3;
+	inline bool operator<(const minimax_res& other) const { return score < other.score; }
+	inline bool operator==(const minimax_res& other) const { return score == other.score; }
+	
 };
 
 class MinimaxPlayer : public Player {
@@ -27,7 +29,7 @@ public:
 private:
 	
 	pos evaluate(const GameState& g);
-	minimax_res minimax(GameState& g,pos depth);
+	minimax_res minimax(const GameState& g,pos depth);
 	
 	bool color;
 	

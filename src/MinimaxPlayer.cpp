@@ -3,8 +3,8 @@
 #include <iostream>
 #include <cstdlib>
 
-using std::max;
-using std::min;
+//using std::max;
+//using std::min;
 using std::cout;
 using std::endl;
 using std::exit;
@@ -57,65 +57,189 @@ pos MinimaxPlayer::evaluate(const GameState& g) {
 	return ret;
 }
 
-minimax_res MinimaxPlayer::minimax(GameState& g,pos depth) {
+inline minimax_res max(const minimax_res& a,const minimax_res& b, int& i) {
+	if(a == 100) {
+		cout << "good job, nub" << endl;
+		exit(0);
+	}
+	if(a == b && (random() % i == 0)) { i++; return b; }
+	if(a < b) { i = 1; return b; }
+	else { i = 1; return a; }
+}
+inline minimax_res min(const minimax_res& a,const minimax_res& b, int& i) {
+	if(a == -100) {
+		cout << "good job, nub" << endl;
+		exit(0);
+	}
+	if(a == b && (random() % i == 0)) { i++; return b; }
+	if(a < b) { i = 1; return a; }
+	else { i = 1; return b; }
+}
+
+#define TEST_PIECE_MOVE(_i1,_j1,_i2,_j2) \
+GameState g_clone = g; \
+g_clone.movePiece(_i1,_j1,_i2,_j2); \
+minimax_res res = minimax(g_clone,depth-1); \
+res.i1 = _i1; \
+res.j1 = _j1; \
+res.i2 = _i2; \
+res.j2 = _j2; \
+alpha = maximize ? max(alpha,res,count) : min(alpha,res,count); \
+
+#define TEST_PIECE_PULL(_i1,_j1,_i2,_j2,_i3,_j3) \
+GameState g_clone = g; \
+g_clone.pullPiece(_i1,_j1,_i2,_j2,_i3,_j3); \
+minimax_res res = minimax(g_clone,depth-1); \
+res.i1 = _i1; \
+res.j1 = _j1; \
+res.i2 = _i2; \
+res.j2 = _j2; \
+res.i3 = _i3; \
+res.j3 = _j3; \
+alpha = maximize ? max(alpha,res,count) : min(alpha,res,count); \
+
+#define TEST_PIECE_PUSH(_i1,_j1,_i2,_j2,_i3,_j3) \
+if(g.canPush(_i1,_j1,_i2,_j2,_i3,_j3)) { \
+	GameState g_clone = g; \
+	g_clone.pushPiece(_i1,_j1,_i2,_j2,_i3,_j3); \
+	minimax_res res = minimax(g_clone,depth-1); \
+	res.i1 = _i1; \
+	res.j1 = _j1; \
+	res.i2 = _i2; \
+	res.j2 = _j2; \
+	res.i3 = _i3; \
+	res.j3 = _j3; \
+	alpha = maximize ? max(alpha,res,count) : min(alpha,res,count); \
+}
+
+minimax_res MinimaxPlayer::minimax(const GameState& g,pos depth) {
 	if(depth <= 0) {
-		return minimax_res(evaluate(g),-1,-1,-1,-1);
+		return minimax_res(evaluate(g));
 	}
 	
 	bool maximize = g.getToMove() == color;
-	minimax_res alpha = minimax_res((pos)((maximize*2 - 1) * 100),-1,-1,-1,-1);
+	const bool& pColor = g.getToMove();
+	minimax_res alpha = minimax_res((pos)((maximize*-2 + 1) * 100));
+	int count=1;
 	
 	for(pos i=0;i<8;i++) {
 		for(pos j=0;j<8;j++) {
-			if(!g.getPiece(i,j) || !isColor(g.getPiece(i,j),color)) {
+			const pos& mypiece = g.getPiece(i,j);
+			if(!g.getPiece(i,j) || !isColor(g.getPiece(i,j),pColor) || g.frozen(i,j)) {
 				continue;
 			}
+			bool canMoveTop, movablePieceTop;
+			bool canMoveBot, movablePieceBot;
+			bool canMoveLft, movablePieceLft;
+			bool canMoveRgt, movablePieceRgt;
+			
+			if(g.canMove(i,j,i,j-1)) { canMoveTop = true; movablePieceTop = false; }
+			else {
+				canMoveTop = false;
+				if(j > 0 && g.getPiece(i,j-1) && !isColor(g.getPiece(i,j-1),pColor) && stronger(mypiece,g.getPiece(i,j-1))) {
+					movablePieceTop = true;
+				} else { movablePieceTop = false; }
+			}
+			if(g.canMove(i,j,i,j+1)) { canMoveBot = true; movablePieceBot = false; }
+			else {
+				canMoveBot = false;
+				if(j < 7 && g.getPiece(i+1,j) && !isColor(g.getPiece(i,j+1),pColor) && stronger(mypiece,g.getPiece(i,j+1))) {
+					movablePieceBot = true;
+				} else { movablePieceBot = false; }
+			}
+			if(g.canMove(i,j,i+1,j)) { canMoveRgt = true; movablePieceRgt = false; }
+			else {
+				canMoveRgt = false;
+				if(i < 7 && g.getPiece(i+1,j) && !isColor(g.getPiece(i+1,j),pColor) && stronger(mypiece,g.getPiece(i+1,j))) {
+					movablePieceRgt = true;
+				} else { movablePieceRgt = false; }
+			}
+			if(g.canMove(i,j,i-1,j)) { canMoveLft = true; movablePieceLft = false; }
+			else {
+				canMoveLft = false;
+				if(i > 0 && g.getPiece(i-1,j) && !isColor(g.getPiece(i-1,j),pColor) && stronger(mypiece,g.getPiece(i-1,j))) {
+					movablePieceLft = true;
+				} else { movablePieceLft = false; }
+			}
+			
+			if(g.getMovesLeft()<2) {
+				movablePieceBot = movablePieceLft = movablePieceRgt = movablePieceTop = false;
+			}
+			
 			//canMove, etc reject i,j that are outside of the board, so i'm not doing that here
-			if(g.canMove(i,j,i+1,j)) {
-				GameState g_clone = g;
-				g_clone.movePiece(i,j,i+1,j);
-				minimax_res res = minimax(g_clone,depth-1);
-				res.i1 = i;
-				res.j1 = j;
-				res.i2 = i+1;
-				res.j2 = j;
-				alpha = maximize ? max(alpha,res) : min(alpha,res);
-			} else { //we can push/pull this dude
-				
+			if(canMoveRgt) {
+				TEST_PIECE_MOVE(i,j,i+1,j)
+			} else if(movablePieceRgt) { //we can push/pull this dude
+				//pull
+				if(canMoveLft) {
+					TEST_PIECE_PULL(i,j,i+1,j,i-1,j)
+				}
+				if(canMoveTop) {
+					TEST_PIECE_PULL(i,j,i+1,j,i,j-1)
+				}
+				if(canMoveBot) {
+					TEST_PIECE_PULL(i,j,i+1,j,i,j+1);
+				}
+				TEST_PIECE_PUSH(i,j,i+1,j,i+2,j) //right
+				TEST_PIECE_PUSH(i,j,i+1,j,i+1,j+1) //down
+				TEST_PIECE_PUSH(i,j,i+1,j,i+1,j-1) //up
 			}
-			if(g.canMove(i,j,i-1,j)) {
-				GameState g_clone = g;
-				g_clone.movePiece(i,j,i-1,j);
-				minimax_res res = minimax(g_clone,depth-1);
-				res.i1 = i;
-				res.j1 = j;
-				res.i2 = i-1;
-				res.j2 = j;
-				alpha = maximize ? max(alpha,res) : min(alpha,res);
-			} else { //we can push/pull this dude
-				
+			if(canMoveLft) {
+				TEST_PIECE_MOVE(i,j,i-1,j)
+			} else if(movablePieceLft) { //we can push/pull this dude
+				//pull
+				if(canMoveRgt) {
+					TEST_PIECE_PULL(i,j,i-1,j,i+1,j)
+				}
+				if(canMoveTop) {
+					TEST_PIECE_PULL(i,j,i-1,j,i,j-1)
+				}
+				if(canMoveBot) {
+					TEST_PIECE_PULL(i,j,i-1,j,i,j+1);
+				}
+				TEST_PIECE_PUSH(i,j,i-1,j,i-2,j) //left
+				TEST_PIECE_PUSH(i,j,i-1,j,i+1,j+1) //down
+				TEST_PIECE_PUSH(i,j,i-1,j,i+1,j-1) //up
 			}
-			if(g.canMove(i,j,i,j+1)) {
-				GameState g_clone = g;
-				g_clone.movePiece(i,j,i,j+1);
-				minimax_res res = minimax(g_clone,depth-1);
-				res.i1 = i;
-				res.j1 = j;
-				res.i2 = i;
-				res.j2 = j+1;
-				alpha = maximize ? max(alpha,res) : min(alpha,res);
+			if(canMoveBot) {
+				TEST_PIECE_MOVE(i,j,i,j+1)
+			} else if(movablePieceBot) { //we can push/pull this dude
+				//pull
+				if(canMoveRgt) {
+					TEST_PIECE_PULL(i,j,i,j+1,i+1,j)
+				}
+				if(canMoveTop) {
+					TEST_PIECE_PULL(i,j,i,j+1,i,j-1)
+				}
+				if(canMoveLft) {
+					TEST_PIECE_PULL(i,j,i,j+1,i-1,j);
+				}
+				TEST_PIECE_PUSH(i,j,i,j+1,i-1,j+1) //left
+				TEST_PIECE_PUSH(i,j,i,j+1,i,j+2) //up
+				TEST_PIECE_PUSH(i,j,i,j+1,i+1,j+1) //right
 			}
-			if(g.canMove(i,j,i,j-1)) {
-				GameState g_clone = g;
-				g_clone.movePiece(i,j,i,j-1);
-				minimax_res res = minimax(g_clone,depth-1);
-				res.i1 = i;
-				res.j1 = j;
-				res.i2 = i;
-				res.j2 = j-1;
-				alpha = maximize ? max(alpha,res) : min(alpha,res);
+			if(canMoveTop) {
+				TEST_PIECE_MOVE(i,j,i,j-1)
+			} else if(movablePieceTop) { //we can push/pull this dude
+				//pull
+				if(canMoveRgt) {
+					TEST_PIECE_PULL(i,j,i,j-1,i+1,j)
+				}
+				if(canMoveBot) {
+					TEST_PIECE_PULL(i,j,i,j-1,i,j+1)
+				}
+				if(canMoveLft) {
+					TEST_PIECE_PULL(i,j,i,j-1,i-1,j);
+				}
+				TEST_PIECE_PUSH(i,j,i,j-1,i-1,j-1) //left
+				TEST_PIECE_PUSH(i,j,i,j-1,i,j-2) //down
+				TEST_PIECE_PUSH(i,j,i,j-1,i+1,j-1) //right
 			}
 		}
+	}
+	if(alpha.score == 100 || alpha.score == -100) {
+		cout << "something wrong here" << endl;
+		exit(0);
 	}
 	
 	return alpha;
@@ -125,9 +249,15 @@ minimax_res MinimaxPlayer::minimax(GameState& g,pos depth) {
 GameState MinimaxPlayer::doMove(const GameState& g_old) {
 	GameState g = g_old;
 	minimax_res m = minimax(g,4);
-	if(g.movePiece(m.i1,m.j1,m.i2,m.j2)) {
-		cout << "success! " << (int)m.i1 << " " << (int)m.j1 << " " << (int)m.i2 << " " << (int)m.j2 << endl;
-		exit(0);
+	if(g.canMove(m.i1,m.j1,m.i2,m.j2)) {
+		g.movePiece(m.i1,m.j1,m.i2,m.j2);
+		//exit(0);
+	} else if(g.canPull(m.i1,m.j1,m.i2,m.j2,m.i3,m.j3)) {
+		g.pullPiece(m.i1,m.j1,m.i2,m.j2,m.i3,m.j3);
+	} else if(g.canPush(m.i1,m.j1,m.i2,m.j2,m.i3,m.j3)) {
+		g.pushPiece(m.i1,m.j1,m.i2,m.j2,m.i3,m.j3);
+	} else {
+		cout << "failure!  " << (int)m.i1 << " " << (int)m.j1 << " " << (int)m.i2 << " " << (int)m.j2 << " " << (int)m.i3 << " " << (int)m.j3 << endl;
 	}
 	return g;
 	
