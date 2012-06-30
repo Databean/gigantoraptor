@@ -12,7 +12,7 @@ GLuint getTextureFromImage(String image) {
 		// handle error
 		return 0;
 	}
-	GLenum texture_format;
+	GLenum texture_format = GL_RGBA;
 	GLint  nOfColors;
 	GLuint texture;
 	
@@ -20,7 +20,7 @@ GLuint getTextureFromImage(String image) {
 	nOfColors = surface->format->BytesPerPixel;
 	if (nOfColors == 4)     // contains an alpha channel
 	{
-		printf("image is 4 colors\n");
+		//printf("image is 4 colors\n");
 		if (surface->format->Rmask == 0x000000ff)
 			texture_format = GL_RGBA;
 		else
@@ -28,7 +28,7 @@ GLuint getTextureFromImage(String image) {
 			texture_format = GL_BGRA;
 	} else if (nOfColors == 3)     // no alpha channel
 	{
-		printf("image is 3 colors\n");
+		//printf("image is 3 colors\n");
 		if (surface->format->Rmask == 0x000000ff)
 			texture_format = GL_RGB;
 		else
@@ -36,6 +36,7 @@ GLuint getTextureFromImage(String image) {
 	} else {
 		printf("warning: the image is not truecolor..  this will probably break\n");
 		// this error should not go unhandled
+		return 0;
 	}
 		
 	// Have OpenGL generate a texture object handle for us

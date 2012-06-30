@@ -4,6 +4,10 @@
 #include "CApp.h"
 #include "Player.h"
 #include "GameState.h"
+#include "SDL.h"
+
+//don't call this
+int gameLoopFunction(void* data);
 
 class ArimaaGame : public CApp {
 public:
@@ -13,6 +17,9 @@ public:
 	virtual bool init();
 	virtual void draw();
 	
+	virtual void playGame();
+	virtual void haltGame();
+	
 	virtual void handleEvent(const SDL_Event&);
 	
 	inline GLuint getPieceTexture(const pos& piece) const {
@@ -20,7 +27,13 @@ public:
 		return pieceTextures[piece];
 	}
 	
+	friend int gameLoopFunction(void* data);
+	
 private:
+	SDL_Thread* gameThread;
+	SDL_mutex* stateMutex;
+	bool running;
+	
 	//
 	GLuint pieceTextures[128];
 	GameState state;

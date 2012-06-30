@@ -14,21 +14,27 @@ QueenAggressor::~QueenAggressor() {
 	
 }
 
-void QueenAggressor::placePiece(GameState& g) {
+GameState QueenAggressor::placePiece(const GameState& g_old) {
+	GameState g = g_old;
 	pos piece = (1 << ((random()%6)+1)) | color;
 	pos i = (color*6)+random()%2;
 	pos j = random()%8;
 	if(piece & KING_MASK) {
 		i = color ? 6 : 1;
 	}
-	if(g.placePiece(piece,i,j)) {
+	while(!g.placePiece(piece,i,j)) {
+		i = (color*6)+random()%2;
+		j = random()%8;
+		piece = (1 << ((random()%6)+1)) | color;
 		//cout << "successful piece placement" << endl;
-		cout << "placing " << int(piece) << " at " << int(i) << ", " << int(j) << " as " << color << endl;
+		//cout << "placing " << int(piece) << " at " << int(i) << ", " << int(j) << " as " << color << endl;
 	}
 	//
+	return g;
 }
 
-void QueenAggressor::doMove(GameState& g) {
+GameState QueenAggressor::doMove(const GameState& g_old) {
+	GameState g = g_old;
 	//find our queen
 	pos qi=9;
 	pos qj=9;
@@ -42,7 +48,7 @@ void QueenAggressor::doMove(GameState& g) {
 	}
 	if(qi==9 || qj==9) { //if we have no queen, do something silly
 		cout << "no king found" << endl;
-		doRandom(g); return;
+		doRandom(g); return g;
 	}
 	//find the nearest enemy piece that we can take
 	pos ei = 100;
@@ -58,29 +64,35 @@ void QueenAggressor::doMove(GameState& g) {
 	}
 	if(ei == 100 || ej == 100) {
 		cout << "no enemy pieces found" << endl;
-		doRandom(g); return;
+		doRandom(g); return g;
 	}
 	if(abs(qi-ei)+abs(qj-ej)>1) {
 		//move towards it
-		pos i;
-		pos j;
+		pos i, j;
 		if(pathFind(g,qi,qj,ei,ej,i,j)) {
-			
+			g.movePiece(qi,qj,i,j);
+			return g;
 		} else {
 			cout << "can't get there" << endl;
 			doRandom(g);
+			return g;
 		}
+	} else {
+		//pull it towards our trap square
+		//pos i,j;
+		
 	}
 	cout << "not implemented yet" << endl;
 	doRandom(g);
-	
+	return g;
 }
 
 void QueenAggressor::doRandom(GameState& g) {
-	pos i_s = random()%8, j_s = random()%8, i_f = random()%8, j_f = random()%8;
-	if(g.movePiece(i_s,j_s,i_f,j_f)) {
-		cout << "moving from " << int(i_s) << ", " << int(j_s) << " to " << int(i_f) << ", " << int(j_f) << " as " << int(color) << endl;
-	}
+	pos i_s, j_s, i_f, j_f;
+	do {
+		i_s = random()%8, j_s = random()%8, i_f = random()%8, j_f = random()%8;
+		//cout << "moving from " << int(i_s) << ", " << int(j_s) << " to " << int(i_f) << ", " << int(j_f) << " as " << int(color) << endl;
+	} while(!g.movePiece(i_s,j_s,i_f,j_f));
 }
 
 struct data {
