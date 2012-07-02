@@ -19,6 +19,7 @@ using std::map;
 Player* getPlayer(string name) {
 	if(name=="minimax") { return new MinimaxPlayer(); }
 	else if(name=="human") { return new HumanPlayer(); }
+	else if(name=="humanvis") { return new HumanVisPlayer(); }
 	else if(name=="random") { return new RandomPlayer(); }
 	else if(name=="aggressor") { return new QueenAggressor(); }
 	else { return NULL; }

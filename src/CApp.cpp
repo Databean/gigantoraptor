@@ -1,5 +1,10 @@
 #include "CApp.h"
+#include "SDL_ttf.h"
 #include <stdlib.h>
+#include <iostream>
+
+using std::cout;
+using std::endl;
 
 CApp::CApp(unsigned int windowWidth,unsigned int windowHeight) {
 	this->windowWidth = windowWidth;
@@ -7,13 +12,23 @@ CApp::CApp(unsigned int windowWidth,unsigned int windowHeight) {
 }
 
 CApp::~CApp() {
+	TTF_Quit();
 	SDL_Quit();
 }
 
 bool CApp::init() {
 	if(SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+		cout << "SDL failed to initialize." << endl;
 		return false;
 	}
+	if(TTF_Init()==-1) {
+		cout << "SDL_ttf failed to initialize." << endl;
+		cout << "TTF_GetError: " << TTF_GetError() << endl;
+		return false;
+	} else {
+		cout << "initialized SDL_ttf" << endl;
+	}
+	
 	
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE,            8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,          8);

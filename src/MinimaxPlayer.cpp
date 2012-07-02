@@ -51,7 +51,7 @@ pos MinimaxPlayer::evaluate(const GameState& g) {
 					case QUEEN_MASK: ret += modifier * 8; break;
 					case KING_MASK: ret += modifier * 10; break;
 				}
-				if(g.frozen(i,j)) { ret -= modifier; }
+				//if(g.frozen(i,j)) { ret -= modifier; }
 			}
 		}
 	}

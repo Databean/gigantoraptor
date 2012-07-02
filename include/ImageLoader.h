@@ -9,5 +9,6 @@
 #include "Types.h"
 
 GLuint getTextureFromImage(String image);
+GLuint getTextureFromText(String text, int& w, int& h, String fontname = "fonts/ConsolaMono.ttf", int fontsize = 24);
 
 #endif

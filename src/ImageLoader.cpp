@@ -1,4 +1,7 @@
 #include "ImageLoader.h"
+#include <SDL_ttf.h>
+#include <math.h>
+
 
 using namespace std;
 
@@ -55,6 +58,79 @@ GLuint getTextureFromImage(String image) {
 	
 	SDL_FreeSurface(surface);
 	(rwop)->close(rwop);
+	
+	glBindTexture( GL_TEXTURE_2D, 0);
+	
+	return texture;
+}
+
+int nextpoweroftwo(int x) {
+	double logbase2 = log(x) / log(2);
+	return round(pow(2,ceil(logbase2)));
+}
+
+GLuint getTextureFromText(String text, int& w, int& h, String fontname, int fontsize) {
+	
+	SDL_Surface *initial;
+	GLuint texture;
+	
+	TTF_Font *font = TTF_OpenFont( fontname.c_str(), fontsize );
+	SDL_Color color;
+	color.r = 0;
+	color.g = 0;
+	color.b = 0;
+	
+	if(!font) {
+		printf("failed to load font\n");
+		printf("TTF_OpenFont: %s\n", TTF_GetError());
+		exit(0);
+	}
+	
+	initial = TTF_RenderText_Blended(font, text.c_str(), color);
+	
+	if(!initial) {
+		printf("Failed to draw text\n");
+		return 0;
+	}
+	
+	w = initial->w;
+	h = initial->h;
+	
+	GLenum texture_format = GL_RGBA;
+	GLint nOfColors = initial->format->BytesPerPixel;
+	if (nOfColors == 4)     // contains an alpha channel
+	{
+		if (initial->format->Rmask == 0x000000ff) {
+			texture_format = GL_RGBA;
+		} else {
+			texture_format = GL_BGRA;
+		}
+	} else if (nOfColors == 3)     // no alpha channel
+	{
+		//printf("image is 3 colors\n");
+		if (initial->format->Rmask == 0x000000ff)
+			texture_format = GL_RGB;
+		else
+			texture_format = GL_BGR;
+	} else {
+		printf("warning: the image is not truecolor..  this will probably break\n");
+		// this error should not go unhandled
+		return 0;
+	}
+	
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	
+	// Set the texture's stretching properties
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	
+	glTexImage2D(GL_TEXTURE_2D, 0, nOfColors, w, h, 0, texture_format, 
+				 GL_UNSIGNED_BYTE, initial->pixels );
+	
+	SDL_FreeSurface(initial);
+	
+	TTF_CloseFont( font );
 	
 	glBindTexture( GL_TEXTURE_2D, 0);
 	
