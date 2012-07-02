@@ -8,6 +8,7 @@
 #include "RandomPlayer.h"
 #include "QueenAggressor.h"
 #include "HumanPlayer.h"
+#include "HumanVisPlayer.h"
 #include "MinimaxPlayer.h"
 #include <map>
 #include <string>
@@ -25,7 +26,6 @@ Player* getPlayer(string name) {
 
 int main(int argc,char** argv) {
 	srand(time(NULL));
-	
 	if(argc < 3) { return 0; }
 	
 	Player* p1 = getPlayer(argv[1]);
@@ -47,6 +47,7 @@ int main(int argc,char** argv) {
 		r.render();
 		SDL_Delay(10);
 	}
+
 	r.haltGame();
 	
 	delete p1;

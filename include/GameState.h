@@ -10,13 +10,12 @@
 #define BLACK_BIT 0
 #define WHITE_BIT 1
 #define COLOR_MASK 0x1
-#define PAWN_MASK 0x2
+#define PAWN_MASK 0x2 
 #define KNIGHT_MASK 0x4
 #define BISHOP_MASK 0x8
 #define ROOK_MASK 0x10
 #define QUEEN_MASK 0x20
 #define KING_MASK 0x40
-
 inline bool isBlack(const pos& piece) { return (piece & COLOR_MASK) == BLACK_BIT; }
 inline bool isWhite(const pos& piece) { return (piece & COLOR_MASK) == WHITE_BIT; }
 inline bool getColor(const pos& piece) { return piece & COLOR_MASK; }
@@ -32,8 +31,8 @@ inline bool isKing(const pos& piece) { return (piece & KING_MASK) != 0; }
 inline bool stronger(const pos& p1,const pos& p2) { return stripColor(p1)>stripColor(p2); } //is p1 stronger than p2?
 
 struct pos2 {
-	pos2(const pos& i,const pos& j) : i(i), j(j) {}
-	pos i,j;
+    pos2(const pos& i,const pos& j) : i(i), j(j) {}
+    pos i,j;
 };
 
 /**
