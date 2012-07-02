@@ -51,6 +51,7 @@ pos MinimaxPlayer::evaluate(const GameState& g) {
 					case QUEEN_MASK: ret += modifier * 8; break;
 					case KING_MASK: ret += modifier * 10; break;
 				}
+				if(g.frozen(i,j)) { ret -= modifier; }
 			}
 		}
 	}
@@ -58,19 +59,11 @@ pos MinimaxPlayer::evaluate(const GameState& g) {
 }
 
 inline minimax_res max(const minimax_res& a,const minimax_res& b, int& i) {
-	if(a == 100) {
-		cout << "good job, nub" << endl;
-		exit(0);
-	}
 	if(a == b && (random() % i == 0)) { i++; return b; }
 	if(a < b) { i = 1; return b; }
 	else { i = 1; return a; }
 }
 inline minimax_res min(const minimax_res& a,const minimax_res& b, int& i) {
-	if(a == -100) {
-		cout << "good job, nub" << endl;
-		exit(0);
-	}
 	if(a == b && (random() % i == 0)) { i++; return b; }
 	if(a < b) { i = 1; return a; }
 	else { i = 1; return b; }
@@ -79,47 +72,77 @@ inline minimax_res min(const minimax_res& a,const minimax_res& b, int& i) {
 #define TEST_PIECE_MOVE(_i1,_j1,_i2,_j2) \
 GameState g_clone = g; \
 g_clone.movePiece(_i1,_j1,_i2,_j2); \
-minimax_res res = minimax(g_clone,depth-1); \
+minimax_res res = minimax(g_clone,depth-1,alpha,beta); \
 res.i1 = _i1; \
 res.j1 = _j1; \
 res.i2 = _i2; \
 res.j2 = _j2; \
-alpha = maximize ? max(alpha,res,count) : min(alpha,res,count); \
+if(maximize) { \
+	alpha = max(alpha,res,count); \
+	if(alpha > beta) { \
+		return alpha; \
+	} \
+} else { \
+	beta = min(beta,res,count); \
+	if(alpha > beta) { \
+		return beta; \
+	} \
+}
 
 #define TEST_PIECE_PULL(_i1,_j1,_i2,_j2,_i3,_j3) \
 GameState g_clone = g; \
 g_clone.pullPiece(_i1,_j1,_i2,_j2,_i3,_j3); \
-minimax_res res = minimax(g_clone,depth-1); \
+minimax_res res = minimax(g_clone,depth-1,alpha,beta); \
 res.i1 = _i1; \
 res.j1 = _j1; \
 res.i2 = _i2; \
 res.j2 = _j2; \
 res.i3 = _i3; \
 res.j3 = _j3; \
-alpha = maximize ? max(alpha,res,count) : min(alpha,res,count); \
+if(maximize) { \
+	alpha = max(alpha,res,count); \
+	if(alpha > beta) { \
+		return alpha; \
+	} \
+} else { \
+	beta = min(beta,res,count); \
+	if(alpha > beta) { \
+		return beta; \
+	} \
+}
 
 #define TEST_PIECE_PUSH(_i1,_j1,_i2,_j2,_i3,_j3) \
 if(g.canPush(_i1,_j1,_i2,_j2,_i3,_j3)) { \
 	GameState g_clone = g; \
 	g_clone.pushPiece(_i1,_j1,_i2,_j2,_i3,_j3); \
-	minimax_res res = minimax(g_clone,depth-1); \
+	minimax_res res = minimax(g_clone,depth-1,alpha,beta); \
 	res.i1 = _i1; \
 	res.j1 = _j1; \
 	res.i2 = _i2; \
 	res.j2 = _j2; \
 	res.i3 = _i3; \
 	res.j3 = _j3; \
-	alpha = maximize ? max(alpha,res,count) : min(alpha,res,count); \
+	if(maximize) { \
+		alpha = max(alpha,res,count); \
+		if(alpha > beta) { \
+			return alpha; \
+		} \
+	} else { \
+		beta = min(beta,res,count); \
+		if(alpha > beta) { \
+			return beta; \
+		} \
+	} \
 }
 
-minimax_res MinimaxPlayer::minimax(const GameState& g,pos depth) {
+minimax_res MinimaxPlayer::minimax(const GameState& g,pos depth,minimax_res alpha,minimax_res beta) {
 	if(depth <= 0) {
 		return minimax_res(evaluate(g));
 	}
 	
 	bool maximize = g.getToMove() == color;
 	const bool& pColor = g.getToMove();
-	minimax_res alpha = minimax_res((pos)((maximize*-2 + 1) * 100));
+	//minimax_res alpha = minimax_res((pos)((maximize*-2 + 1) * 100));
 	int count=1;
 	
 	for(pos i=0;i<8;i++) {
@@ -237,10 +260,6 @@ minimax_res MinimaxPlayer::minimax(const GameState& g,pos depth) {
 			}
 		}
 	}
-	if(alpha.score == 100 || alpha.score == -100) {
-		cout << "something wrong here" << endl;
-		exit(0);
-	}
 	
 	return alpha;
 	
@@ -248,7 +267,7 @@ minimax_res MinimaxPlayer::minimax(const GameState& g,pos depth) {
 
 GameState MinimaxPlayer::doMove(const GameState& g_old) {
 	GameState g = g_old;
-	minimax_res m = minimax(g,4);
+	minimax_res m = minimax(g,6,-100,100);
 	if(g.canMove(m.i1,m.j1,m.i2,m.j2)) {
 		g.movePiece(m.i1,m.j1,m.i2,m.j2);
 		//exit(0);
