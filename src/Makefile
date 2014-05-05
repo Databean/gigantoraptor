@@ -1,15 +1,13 @@
-CC := g++
 INCLUDES := -I/usr/include/GL/ -I/usr/include/SDL/ -I$(INCL_HOME)
-CFLAGS := -Wall -c $(INCLUDES) -O3
+CFLAGS := -Wall -c $(INCLUDES) -O2 -std=c++11 -Wall
 SOURCES := $(wildcard *.cpp)
-OBJECTS := $(SOURCES:.cpp=.o)
+OBJECTS := $(addprefix $(OBJ_HOME)/,$(SOURCES:.cpp=.o))
 
 main: $(OBJECTS)
 	
 
-%.o: %.cpp
-	g++ $(CFLAGS) $< -o $(OBJ_HOME)/$@ -g
-
+$(OBJ_HOME)/%.o: %.cpp
+	g++ $(CFLAGS) $< -o $@ -g
 
 
 .PHONY: clean
